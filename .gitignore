@@ -1,0 +1,25 @@
+# Generated installer material may contain credentials and certificates.
+wazuh-install-files.tar
+*.tar
+*.tar.gz
+
+# Local logs and captured event data.
+*.log
+eve.json
+alerts.json
+
+# Backups and machine-specific configuration.
+*.bak-*
+*.orig-before-*
+ossec.conf
+suricata.yaml
+
+# Credentials, keys, certificates, and local environment files.
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
