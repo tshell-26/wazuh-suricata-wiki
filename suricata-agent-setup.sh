@@ -14,13 +14,13 @@
 #   sudo bash suricata-agent-setup.sh                        # all default-route interfaces
 #   sudo bash suricata-agent-setup.sh -i eth0                # one interface
 #   sudo bash suricata-agent-setup.sh -i eth0,wlan0          # explicit list
-#   sudo bash suricata-agent-setup.sh --home-net YOUR_AGENT_PUBLIC_IP/32
+#   sudo bash suricata-agent-setup.sh --home-net <AGENT_PUBLIC_IP>/32
 #                                    # replace with the agent's public address if applicable
 #
 # Safe to re-run: files are backed up and nothing is added twice.
+# =============================================================================
 # REPLACE BEFORE SHARING: Review host-specific addresses, usernames, versions, logs,
 # and configuration examples. Never include credentials or generated secrets.
-# =============================================================================
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
@@ -35,7 +35,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -i|--interface) IFACE="${2:?missing interface}"; shift 2 ;;
     --home-net)     HOME_NET="${2:?missing CIDR}"; shift 2 ;;
-    -h|--help)      sed -n 2,21p "$0"; exit 0 ;;
+    -h|--help)      sed -n '3,/^# ====/{/^# ====/d;p;}' "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -55,7 +55,8 @@ systemctl is-active --quiet wazuh-agent || die "wazuh-agent is not running. Star
 [ -s "$CLIENT_KEYS" ] || die "This agent is not enrolled with a manager ($CLIENT_KEYS is empty)."
 MANAGER=$(grep -m1 -oP '(?<=<address>)[^<]+' "$OSSEC_CONF" || true)
 case "$MANAGER" in
-  ""|MANAGER_IP|MANAGER_IP_ADDRESS) die "Manager address in $OSSEC_CONF is not set (found: '${MANAGER:-none}')." ;;
+  ""|MANAGER_IP|MANAGER_IP_ADDRESS|*SERVER_HOST_OR_IP*|"<"*">")
+    die "Manager address in $OSSEC_CONF is not set (found: '${MANAGER:-none}'). Replace the placeholder with the server's real address." ;;
 esac
 echo "Agent is running and enrolled. Manager: $MANAGER"
 

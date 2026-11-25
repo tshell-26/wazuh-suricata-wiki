@@ -5,8 +5,8 @@
 # What it does:
 #   1. Points Suricata at real network interfaces: by default EVERY interface
 #      that has a default route, i.e. both the wired and the wireless
-#      connection (the stock "eth0" does not exist on this machine, which is
-#      why suricata.service is failing).
+#      connection (the stock "eth0" often does not exist on modern systems,
+#      which makes suricata.service fail).
 #   2. Downloads the Emerging Threats Open ruleset with suricata-update.
 #   3. Validates the config, then enables and starts Suricata.
 #   4. Tells the Wazuh manager to read /var/log/suricata/eve.json (JSON).
@@ -17,17 +17,16 @@
 #
 # Usage:
 #   sudo bash suricata-wazuh-integration.sh                       # wired + wireless (auto)
-#   sudo bash suricata-wazuh-integration.sh -i YOUR_WIRED_INTERFACE    # wired only
-#   sudo bash suricata-wazuh-integration.sh -i YOUR_WIRED_INTERFACE,YOUR_WIRELESS_INTERFACE
-#                                                                   # explicit list
+#   sudo bash suricata-wazuh-integration.sh -i <WIRED_INTERFACE>  # wired only
+#   sudo bash suricata-wazuh-integration.sh -i <WIRED_INTERFACE>,<WIRELESS_INTERFACE>
+#                                                                 # explicit list
 #   sudo bash suricata-wazuh-integration.sh --agents              # also configure agents
-#
-# REPLACE BEFORE SHARING: Review host-specific interface names, addresses, usernames,
-# versions, logs, and configuration examples. Never include credentials or generated secrets.
 #
 # Safe to re-run: every file is backed up before it is changed, and the Wazuh
 # blocks are only added if they are not already there.
 # =============================================================================
+# REPLACE BEFORE SHARING: Review host-specific interface names, addresses, usernames,
+# versions, logs, and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
@@ -42,7 +41,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -i|--interface) IFACE="$2"; shift 2 ;;
     --agents)       DO_AGENTS=yes; shift ;;
-    -h|--help)      sed -n 2,27p "$0"; exit 0 ;;
+    -h|--help)      sed -n '3,/^# ====/{/^# ====/d;p;}' "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done

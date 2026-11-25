@@ -95,8 +95,6 @@ It takes about 3 to 20 minutes. At the end it prints the dashboard user and a ge
 
 The installer stores generated passwords and cluster certificates in `~/wazuh-install-files.tar`. Keep that file outside the repository in secure storage. Never commit the archive, its extracted contents, passwords, or certificates.
 
-<!-- REPLACE BEFORE SHARING: If you document password recovery for your Wazuh version, link to the current official procedure. Do not include generated passwords or commands that print them into logs or shared terminals. -->
-
 <!-- REPLACE BEFORE SHARING: Add the current official, secure password-recovery procedure for your Wazuh version. Do not include commands that print generated passwords into logs or shared terminals. -->
 
 Access the archive only from a trusted local session and store its contents securely. Do not add the archive, extracted password file, or credentials to this repository.
@@ -131,14 +129,14 @@ It is safe to re-run. It backs up every file it changes, and it always rebuilds 
 sudo apt-get install -y suricata suricata-update
 ```
 ```bash
-sudo bash suricata-wazuh-integration.sh -i "YOUR_SERVER_WIRED_INTERFACE,YOUR_SERVER_WIRELESS_INTERFACE"
+sudo bash suricata-wazuh-integration.sh -i "<SERVER_WIRED_INTERFACE>,<SERVER_WIRELESS_INTERFACE>"
 ```
 
 Other ways to run it:
 
 ```bash
 sudo bash suricata-wazuh-integration.sh                     # auto: every default-route interface
-sudo bash suricata-wazuh-integration.sh -i "YOUR_SERVER_WIRED_INTERFACE"  # wired only
+sudo bash suricata-wazuh-integration.sh -i "<SERVER_WIRED_INTERFACE>"  # wired only
 sudo bash suricata-wazuh-integration.sh --agents            # also configure the default agent group
 ```
 
@@ -155,8 +153,8 @@ sudo bash suricata-wazuh-integration.sh --agents            # also configure the
 # What it does:
 #   1. Points Suricata at real network interfaces: by default EVERY interface
 #      that has a default route, i.e. both the wired and the wireless
-#      connection (the stock "eth0" does not exist on this machine, which is
-#      why suricata.service is failing).
+#      connection (the stock "eth0" often does not exist on modern systems,
+#      which makes suricata.service fail).
 #   2. Downloads the Emerging Threats Open ruleset with suricata-update.
 #   3. Validates the config, then enables and starts Suricata.
 #   4. Tells the Wazuh manager to read /var/log/suricata/eve.json (JSON).
@@ -167,13 +165,16 @@ sudo bash suricata-wazuh-integration.sh --agents            # also configure the
 #
 # Usage:
 #   sudo bash suricata-wazuh-integration.sh                       # wired + wireless (auto)
-#   sudo bash suricata-wazuh-integration.sh -i YOUR_WIRED_INTERFACE    # wired only
-#   sudo bash suricata-wazuh-integration.sh -i YOUR_WIRED_INTERFACE,YOUR_WIRELESS_INTERFACE
+#   sudo bash suricata-wazuh-integration.sh -i <WIRED_INTERFACE>  # wired only
+#   sudo bash suricata-wazuh-integration.sh -i <WIRED_INTERFACE>,<WIRELESS_INTERFACE>
+#                                                                 # explicit list
 #   sudo bash suricata-wazuh-integration.sh --agents              # also configure agents
 #
 # Safe to re-run: every file is backed up before it is changed, and the Wazuh
 # blocks are only added if they are not already there.
 # =============================================================================
+# REPLACE BEFORE SHARING: Review host-specific interface names, addresses, usernames,
+# versions, logs, and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
@@ -188,7 +189,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -i|--interface) IFACE="$2"; shift 2 ;;
     --agents)       DO_AGENTS=yes; shift ;;
-    -h|--help)      sed -n 2,27p "$0"; exit 0 ;;
+    -h|--help)      sed -n '3,/^# ====/{/^# ====/d;p;}' "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -337,12 +338,12 @@ The resulting capture section in `/etc/suricata/suricata.yaml`:
 
 ```yaml
 af-packet:
-  - interface: YOUR_SERVER_WIRED_INTERFACE
+  - interface: <SERVER_WIRED_INTERFACE>
     cluster-id: 99
     cluster-type: cluster_flow
     defrag: yes
 
-  - interface: YOUR_SERVER_WIRELESS_INTERFACE
+  - interface: <SERVER_WIRELESS_INTERFACE>
     cluster-id: 98
     cluster-type: cluster_flow
     defrag: yes
@@ -437,7 +438,7 @@ Supported: Debian-based systems (Debian, Ubuntu, Parrot, Kali). Agents with a **
 Copy the script to the agent, then run it there:
 
 ```bash
-scp suricata-agent-setup.sh YOUR_AGENT_USER@YOUR_AGENT_HOST_OR_IP:~/
+scp suricata-agent-setup.sh <AGENT_USER>@<AGENT_HOST_OR_IP>:~/
 ```
 ```bash
 sudo bash ~/suricata-agent-setup.sh
@@ -463,11 +464,13 @@ sudo bash ~/suricata-agent-setup.sh
 #   sudo bash suricata-agent-setup.sh                        # all default-route interfaces
 #   sudo bash suricata-agent-setup.sh -i eth0                # one interface
 #   sudo bash suricata-agent-setup.sh -i eth0,wlan0          # explicit list
-#   sudo bash suricata-agent-setup.sh --home-net YOUR_AGENT_PUBLIC_IP/32
+#   sudo bash suricata-agent-setup.sh --home-net <AGENT_PUBLIC_IP>/32
 #                                    # replace with the agent's public address if applicable
 #
 # Safe to re-run: files are backed up and nothing is added twice.
 # =============================================================================
+# REPLACE BEFORE SHARING: Review host-specific addresses, usernames, versions, logs,
+# and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
@@ -482,7 +485,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -i|--interface) IFACE="${2:?missing interface}"; shift 2 ;;
     --home-net)     HOME_NET="${2:?missing CIDR}"; shift 2 ;;
-    -h|--help)      sed -n 2,21p "$0"; exit 0 ;;
+    -h|--help)      sed -n '3,/^# ====/{/^# ====/d;p;}' "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -502,7 +505,8 @@ systemctl is-active --quiet wazuh-agent || die "wazuh-agent is not running. Star
 [ -s "$CLIENT_KEYS" ] || die "This agent is not enrolled with a manager ($CLIENT_KEYS is empty)."
 MANAGER=$(grep -m1 -oP '(?<=<address>)[^<]+' "$OSSEC_CONF" || true)
 case "$MANAGER" in
-  ""|MANAGER_IP|MANAGER_IP_ADDRESS) die "Manager address in $OSSEC_CONF is not set (found: '${MANAGER:-none}')." ;;
+  ""|MANAGER_IP|MANAGER_IP_ADDRESS|*SERVER_HOST_OR_IP*|"<"*">")
+    die "Manager address in $OSSEC_CONF is not set (found: '${MANAGER:-none}'). Replace the placeholder with the server's real address." ;;
 esac
 echo "Agent is running and enrolled. Manager: $MANAGER"
 
@@ -627,7 +631,7 @@ EOF
 ### 6.3 View one agent's alerts
 
 ```text
-rule.groups: suricata AND agent.name: "AGENT_NAME"
+rule.groups: suricata AND agent.name: "<AGENT_NAME>"
 ```
 
 ---
