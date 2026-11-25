@@ -4,8 +4,6 @@ How this lab's Wazuh SIEM server was built, how Suricata network IDS alerts were
 
 > **Versions:** Wazuh 4.14.10 (manager, indexer, dashboard), Filebeat 7.10.2, Suricata 7.0.10, Emerging Threats Open ruleset.
 > **Server OS:** Parrot OS 7 (Debian-based).
->
-> <!-- REPLACE: Verify or replace the versions and OS above for your lab. Review this guide and its scripts for personal, network, and machine-specific details before sharing. -->
 
 ## Contents
 
@@ -43,8 +41,6 @@ One machine runs every Wazuh component (an **all-in-one** install). Other machin
 | Server wireless interface | `<SERVER_WIRELESS_INTERFACE>`, `<SERVER_WIRELESS_IP>` |
 | Dashboard | `https://<SERVER_HOST_OR_IP>` (port 443) |
 | Server's own agent ID | `000` (it monitors itself) |
-
-<!-- REPLACE BEFORE SHARING: Substitute your own server/agent IPs, DNS names, and interface names when following the lab. Do not commit real private or public addresses, hostnames, usernames, or network diagrams that identify your environment. -->
 
 Replace `<SERVER_HOST_OR_IP>` with the server address or hostname reachable by the agent. Values in angle brackets are examples to replace locally, not literal shell input.
 
@@ -95,9 +91,9 @@ It takes about 3 to 20 minutes. At the end it prints the dashboard user and a ge
 
 The installer stores generated passwords and cluster certificates in `~/wazuh-install-files.tar`. Keep that file outside the repository in secure storage. Never commit the archive, its extracted contents, passwords, or certificates.
 
-<!-- REPLACE BEFORE SHARING: Add the current official, secure password-recovery procedure for your Wazuh version. Do not include commands that print generated passwords into logs or shared terminals. -->
-
 Access the archive only from a trusted local session and store its contents securely. Do not add the archive, extracted password file, or credentials to this repository.
+
+If the generated passwords are lost, don't try to recover them: set new ones with `wazuh-passwords-tool.sh`, following the official [Wazuh password management](https://documentation.wazuh.com/current/user-manual/user-administration/password-management.html) guide. On an all-in-one server, see [Changing the passwords for all users](https://documentation.wazuh.com/current/user-manual/user-administration/password-management.html#changing-the-passwords-for-all-users). The tool prints the new passwords, so run it in a private terminal and save them straight to a password manager.
 
 ### 3.4 Check the install
 
@@ -173,8 +169,6 @@ sudo bash suricata-wazuh-integration.sh --agents            # also configure the
 # Safe to re-run: every file is backed up before it is changed, and the Wazuh
 # blocks are only added if they are not already there.
 # =============================================================================
-# REPLACE BEFORE SHARING: Review host-specific interface names, addresses, usernames,
-# versions, logs, and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
@@ -469,8 +463,6 @@ sudo bash ~/suricata-agent-setup.sh
 #
 # Safe to re-run: files are backed up and nothing is added twice.
 # =============================================================================
-# REPLACE BEFORE SHARING: Review host-specific addresses, usernames, versions, logs,
-# and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
@@ -666,9 +658,13 @@ sudo ufw allow 1514/tcp && sudo ufw allow 1515/tcp
 
 ### 7.4 Dashboard: "No API available to connect"
 
-The dashboard cannot authenticate to the Wazuh API on port 55000. Use the current official Wazuh password-reset and dashboard-configuration procedure for your installed version. Do not restore or publish a default password, put credentials directly in a script, or commit a dashboard configuration file containing credentials.
+The dashboard cannot authenticate to the Wazuh API on port 55000. This usually happens after the manager is reinstalled and the API users' passwords are reset. Fix it with the official Wazuh procedures:
 
-<!-- REPLACE BEFORE SHARING: Add a verified link to the official Wazuh recovery procedure for the version used in this lab. Do not add passwords or a runnable script that writes a default password. -->
+- **Reset the API passwords and update the dashboard:** [Changing the passwords for all users](https://documentation.wazuh.com/current/user-manual/user-administration/password-management.html#changing-the-passwords-for-all-users). On an all-in-one server, running the tool with the API options (`-A -au wazuh -ap <current-password>`) also updates the `wazuh-wui` password the dashboard uses. Restart `wazuh-dashboard` afterwards.
+- **Check the dashboard's API connection settings** in `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml`: [Could not connect to API with ID error](https://documentation.wazuh.com/current/user-manual/wazuh-dashboard/troubleshooting.html#could-not-connect-to-api-with-id-error).
+- **Make sure the API is running:** [Wazuh server API seems to be down error](https://documentation.wazuh.com/current/user-manual/wazuh-dashboard/troubleshooting.html#wazuh-server-api-seems-to-be-down-error).
+
+Do not restore or publish a default password, put credentials directly in a script, or commit a dashboard configuration file containing credentials.
 
 ### 7.5 Suricata alerts not showing in the dashboard
 

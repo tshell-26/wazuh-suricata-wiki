@@ -13,8 +13,6 @@ Both scripts make system-level changes and require root. Review the scripts and 
 
 ## Replace lab-specific details
 
-<!-- REPLACE BEFORE PUBLIC RELEASE: Review every marker in the guide and scripts. Substitute your own values only where required, and keep real credentials, private keys, certificates, logs, generated archives, and sensitive network details out of Git. -->
-
 The setup guide uses placeholders for addresses, interface names, users, and host-specific values. Replace them with values appropriate to your lab when following the instructions; do not commit real credentials or generated Wazuh installer archives.
 
 ## Contents
@@ -25,4 +23,4 @@ The setup guide uses placeholders for addresses, interface names, users, and hos
 
 ## License
 
-<!-- REPLACE: Choose and add a license if you want to grant others permission to reuse this project. -->
+Released under the [MIT License](License).

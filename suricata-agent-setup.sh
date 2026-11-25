@@ -19,8 +19,6 @@
 #
 # Safe to re-run: files are backed up and nothing is added twice.
 # =============================================================================
-# REPLACE BEFORE SHARING: Review host-specific addresses, usernames, versions, logs,
-# and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml

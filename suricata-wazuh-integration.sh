@@ -25,8 +25,6 @@
 # Safe to re-run: every file is backed up before it is changed, and the Wazuh
 # blocks are only added if they are not already there.
 # =============================================================================
-# REPLACE BEFORE SHARING: Review host-specific interface names, addresses, usernames,
-# versions, logs, and configuration examples. Never include credentials or generated secrets.
 set -euo pipefail
 
 SURICATA_YAML=/etc/suricata/suricata.yaml
